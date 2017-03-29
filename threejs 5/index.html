@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <script src="three.js"></script>
+
+    <style>
+         body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #side {
+            width: 100px;
+            background-color: pink;
+            z-index:100;
+            position:absolute;
+            right:0;
+            top:0;
+
+        }
+        #render{
+            width:960px;
+            height:800px;
+        }
+    </style>
+</head>
+
+<body>
+<script>
+    window.addEventListener("load", function () {
+        var scene = new THREE.Scene();
+
+        var Object3D = [];
+
+        var animacje = [];
+
+        let rozmiar = 1024;
+        let ilosc = 8;
+
+        var srodek = new THREE.Vector3(0, 0, 0)
+
+        var camera = new THREE.PerspectiveCamera(
+            50, // kąt patrzenia kamery (FOV - field of view)
+            4 / 3, // proporcje widoku, powinny odpowiadać proporjom naszego ekranu przeglądarki
+            0.1, // minimalna renderowana odległość
+            10000 // maxymalna renderowana odległość
+            );
+
+        var renderer = new THREE.WebGLRenderer();
+
+        renderer.setClearColor(0x000000);
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        var axisHelper = new THREE.AxisHelper( rozmiar );
+        scene.add( axisHelper );
+
+        var geometry = new THREE.PlaneBufferGeometry(rozmiar,rozmiar,rozmiar);
+        /*
+        var material = new THREE.MeshBasicMaterial({
+            color: 0xff00ff, side: THREE.DoubleSide, wireframe: true
+        });
+
+
+        */
+
+
+ 
+
+        var clock = new THREE.Clock();
+        var object3D = [];
+        let mixer, mixer2;
+       
+        var loader = new THREE.JSONLoader();
+
+        let pozycje = [];
+        let prev = "run";
+
+
+        for (let x = 0; x < 5; x++) {
+            for (let z = 0; z < 5; z++) {
+
+                pozycje.push(
+                    {
+                        x: rozmiar / ilosc * x,
+                        y:0,
+                        z: rozmiar / ilosc * z
+                    }
+                    )
+
+            }
+        }
+
+
+        //funkcja zwraca obiekt geometry, nie mesh
+
+        loader.load('models/tris.js', function (geometry) {
+
+
+            var modelMaterial = new THREE.MeshBasicMaterial(
+                 {
+                     map: THREE.ImageUtils.loadTexture("mats/A.jpg"),
+                     morphTargets: true,
+
+                 });
+
+            var modelMaterial2 = new THREE.MeshBasicMaterial(
+               {
+                   map: THREE.ImageUtils.loadTexture("mats/B.jpg"),
+                   morphTargets: true,
+
+               });
+
+
+            let meshModel = new THREE.Mesh(geometry, modelMaterial)
+            meshModel.name = "model";
+            var box = new THREE.Box3().setFromObject(meshModel);
+
+            meshModel.rotation.y = 0; // ustaw obrót modelu
+            meshModel.position.y = box.getSize().y /2 ; // ustaw pozycje modelu
+            meshModel.scale.set(1, 1, 1); // ustaw skalę modelu
+
+
+            
+           
+
+
+            mixer = new THREE.AnimationMixer(meshModel);
+
+            mixer.clipAction("attack").play();
+            
+            
+            //
+            scene.add(meshModel);
+
+            function dodaj () {
+                let clone = meshModel.clone();
+                
+                clone.material = modelMaterial2;
+                clone.scale.set(2, 2, 2);
+                clone.position.y = box.getSize().y;
+                clone.position.x = Math.floor((Math.random() * rozmiar) - rozmiar/2);
+                clone.position.z = Math.floor((Math.random() * rozmiar) - rozmiar/2);
+
+                clone.mixer2 = new THREE.AnimationMixer(clone);
+
+                clone.mixer2.clipAction("run").play();
+               
+                object3D.push(clone);
+                scene.add(clone);
+                console.log(pozycje);
+            }
+
+            function usunostatni() {
+                if (object3D.length > 0) {
+                    console.log(object3D);
+                    scene.remove(object3D[object3D.length - 1]);
+                    object3D.pop();
+                    console.log(object3D);
+                }
+               
+            }
+            function usunpierwszy() {
+                if (object3D.length > 0) {
+                    console.log(object3D);
+                    scene.remove(object3D[0]);
+                    object3D = object3D.slice(1);
+                    console.log(object3D);
+                }
+
+            }
+          
+
+
+        
+
+
+
+            console.log(geometry.animations);
+            console.log(object3D);
+
+            for (var i = 0; i < geometry.animations.length; i++) {
+                
+
+                animacje.push(geometry.animations[i].name);
+
+                let button = document.createElement('button');
+                document.getElementById("side").appendChild(button);
+                let foo = geometry.animations[i].name;
+                button.innerHTML =foo;
+               
+                button.onclick = function () {
+                  mixer.clipAction(prev).stop();
+                    mixer.clipAction(foo).play();
+                    prev = foo;
+                    
+                    
+                    
+                }
+                
+            }
+
+
+            button = document.createElement('button');
+            document.getElementById("side").appendChild(button);
+            button.innerHTML = "dodaj";
+
+            button.onclick = function () {
+                
+                dodaj();
+
+            }
+
+
+            button = document.createElement('button');
+            document.getElementById("side").appendChild(button);
+            button.innerHTML = "usun ostatni";
+
+            button.onclick = function () {
+
+                usunostatni();
+
+            }
+
+            button = document.createElement('button');
+            document.getElementById("side").appendChild(button);
+            button.innerHTML = "usun pierwszy";
+
+            button.onclick = function () {
+
+                usunpierwszy();
+
+            }
+
+            //console.log(animacje);
+
+        });
+
+        
+
+
+
+
+
+        
+      
+        //var box = new THREE.Box3().setFromObject(meshModel);
+        //console.log(box.getSize().y);
+
+        var material  = (new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: THREE.ImageUtils.loadTexture('mats/D.jpg') }));
+        
+        document.getElementById("render").appendChild(renderer.domElement);
+
+
+
+        mesh = new THREE.Mesh(geometry,material );
+        mesh.position.set(0, 0, 0);
+        mesh.rotation.x = Math.PI / 2;
+        mesh.material.map.repeat.set(20, 20); //gęstość powtarzania
+        mesh.material.map.wrapS = mesh.material.map.wrapT = THREE.RepeatWrapping; // powtarzanie w obu kierunkach
+        scene.add(mesh);
+        
+
+        camera.position.x = -50;
+        camera.position.y = 200;
+        camera.position.z = 0;
+        camera.lookAt(mesh.position);
+
+        function onKeyDown(event) {
+
+            var keyCode = event.which;
+
+            //console.log(keyCode);
+
+
+            switch (keyCode) {
+                case 38:
+                    camera.position.y += 10;
+
+                    break;
+                case 40:
+                    camera.position.y -= 10;
+
+                    break;
+                case 37:
+                    rot -= 0.1;
+
+                    camera.position.x = Math.cos(parseFloat(rot)) * -200 * Math.sqrt(2);
+                    camera.position.z = Math.sin(parseFloat(rot)) * 200 * Math.sqrt(2);
+                    camera.lookAt(srodek);
+                    break;
+                case 39:
+
+                    rot += 0.1;
+                    camera.position.x = Math.cos(parseFloat(rot)) * -200 * Math.sqrt(2);
+                    camera.position.z = Math.sin(parseFloat(rot)) * 200 * Math.sqrt(2);
+                    camera.lookAt(srodek);
+                    break;
+            }
+        }
+
+        var rot = 0;
+
+        function onKeyUp(event) {
+
+            var keyCode = event.which;
+
+            document.removeEventListener("keyup", onKeyUp, false); // naciśnięcie dowolnego klawisza
+            document.addEventListener("keydown", onKeyDown, false); // naciśnięcie dowolnego klawisza
+
+
+
+
+
+        }
+        document.addEventListener("keydown", onKeyDown, false);
+
+
+      
+        function animateScene() {
+
+            
+            
+            ////console.log(delta) // zobacz czy widać zmieniającą się cyfrę w konsoli 
+
+            let delta = clock.getDelta();
+            if (mixer) mixer.update(delta);
+            for (let c = 0; c < object3D.length; c++) {
+
+                if (object3D[c].mixer2) object3D[c].mixer2.update(delta);
+            }
+            
+
+           
+
+                id = requestAnimationFrame(animateScene);
+
+                //mesh.rotation.y += degree;
+
+                renderer.render(scene, camera);
+               
+               
+                
+               
+
+                //console.log(id);
+            
+        }
+        animateScene();
+
+
+    })
+</script>
+
+    <div id="render">
+        <div id="side">
+
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>
