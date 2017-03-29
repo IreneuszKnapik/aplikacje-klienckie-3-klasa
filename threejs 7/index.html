@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <script src="three.js"></script>
+
+    <style>
+         body {
+            margin: 0;
+           
+        }
+        #plansza {
+            width:800px;
+            height: 800px;
+
+           border: 1px solid black;
+           box-sizing:border-box;
+
+        }
+        .tile{
+             border: 1px solid black;
+             box-sizing:border-box;
+             display: inline-block;
+             
+        }
+        .row{
+           
+        }
+        #output {
+            color:white;
+            background-color: black;
+            
+            width:800px;
+            min-height:1000px;
+        }
+        .bt{
+           border: 1px solid black;
+           width: 50px;
+           height: 50px;
+        }
+
+    </style>
+</head>
+
+<body>
+<script>
+
+    let plansza = document.createElement("div");
+    plansza.id = "plansza";
+    document.body.append(plansza);
+
+    let size = 7;
+    let plytki = [];
+
+    let chosen = "yellow";
+    let color = "yellow";
+
+    let btblue = document.createElement("div");
+    btblue.id = "btblue";
+    btblue.className = "bt";
+    btblue.style.color = "blue";
+    btblue.innerHTML = "blue";
+    document.body.append(btblue);
+    btblue.onclick = function () {
+        
+        color = "blue";
+        chosen = "blue";
+    }
+
+    let btred = document.createElement("div");
+    btred.id = "btred";
+    btred.className = "bt";
+    btred.innerHTML = "red";
+    btred.style.color = "red";
+    document.body.append(btred);
+    btred.onclick = function () {
+        color = "red";
+        chosen = "red";
+    }
+    let btsend = document.createElement("div");
+    btsend.id = "btsend";
+    btsend.className = "bt";
+    btsend.innerHTML = "send";
+
+    document.body.append(btsend);
+    btsend.onclick = function () {
+        var level = JSON.parse(output.value);
+        for(let l = 0; l < level.length; l++){
+            console.log(level[l]);
+            plytki[level[l].x][level[l].y].type = level[l].type;
+            plytki[level[l].x][level[l].y].style.backgroundColor = level[l].type;
+            console.log(plytki[level[l].x][level[l].y].type);
+
+        }
+    }
+
+
+
+
+    let output = document.createElement("textarea");
+    output.id = "output";
+    document.body.append(output);
+
+    
+
+    let tiles = [];
+
+    for(let p = 0; p < size; p++){
+        plytki[p] = [];
+    }
+
+    for (let i = 0; i < size; i++) {
+        let row = document.createElement("div");
+        row.x = i;
+        row.style.width = plansza.offsetWidth + "px";
+        row.style.height =  plansza.offsetHeight / size + "px";
+
+        row.className = "row";
+        plansza.append(row);
+        for (let j = 0; j < size; j++) {
+            let tile = document.createElement("div");
+            tile.className = "tile";
+            tile.style.display = "inline-block";
+            tile.x = i;
+            tile.y = j;
+
+            plytki[i][j] = tile;
+            
+            tile.style.width = plansza.offsetWidth / size + "px";
+            tile.style.height = plansza.offsetHeight / size + "px";
+            row.append(tile);
+            tile.onclick = function(){
+                
+                tile.style.backgroundColor = color;
+                tile.type = chosen;
+                let tile_exists = false;
+                for(let c = 0; c < tiles.length; c++){
+                    if(tiles[c].x == tile.x && tile.y == tiles[c].y ){
+                    tiles[c] = ({
+                    x: tile.x,
+                    y: tile.y,
+                    type: tile.type
+                    
+                    })
+                    tile_exists = true;
+                    console.log("put");
+                    }
+                    
+                }
+               if(tile_exists == false){
+                    tiles.push({
+                    x: tile.x,
+                    y: tile.y,
+                    type: tile.type
+                    
+                       })
+                       console.log("pushed");
+                    }
+               
+                   
+                console.log(tiles);
+                
+                    output.value = "";
+
+                    
+
+
+                output.value += JSON.stringify(tiles, null, 3);
+                }
+               
+
+
+                
+
+
+                }
+
+               
+
+               
+
+
+                
+                
+            }
+
+            
+    
+
+    let input = document.createElement("div");
+    input.id = "input";
+    document.body.append(input);
+    input.onclick = function () {
+
+    }
+
+
+
+
+</script>
+
+
+
+
+</body>
+
+</html>
